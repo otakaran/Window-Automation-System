@@ -2,32 +2,57 @@
 // See http://arduino.cc/en/Reference/LiquidCrystal
 
 LiquidCrystal lcd(12,11,5,4,3,2);
+int redButton = 9;
+int blueButton = 8;
+int redState = 0;
+int blueState = 0;
+
+int time = 0;
+int closeTime = 0;
 
 void setup()
 {
   lcd.begin(16, 2);
   lcd.clear();
+  pinMode(redState, INPUT);
+  pinMode(blueState, INPUT);
 }
 
 void loop()
 {
+  redState = digitalRead(redButton);
+  blueState = digitalRead(blueButton);
+  
   int cursorPos = analogRead(0);
   int selection = 0;
   cursorPos = map(cursorPos, 10, 1010, 1,6);
-  lcd.setCursor(3,1);
-  lcd.print("Value=");
   lcd.print(cursorPos);
   delay(100);
   lcd.clear();
   menu(cursorPos);
-  }
+}
 
- void menu(int cursorPos)
- {
+void menu(int cursorPos)
+{
   switch (cursorPos) {
     case 1:
       lcd.setCursor(0,0);
       lcd.print("Set Time");
+      lcd.setCursor(3,1);
+      lcd.print("Value: ");
+      if (redState == HIGH)
+      {
+    time = time + 1;
+      } 
+      else if (blueState == HIGH)
+      {
+        time = time - 1;
+      }
+      else
+      {
+        lcd.print("ERROR TIME: ");
+      }
+      lcd.print(time);
       break;
     case 2:
       lcd.setCursor(0,0);
@@ -54,4 +79,4 @@ void loop()
       lcd.print("ERROR");
     break;
   }
- }
+}
