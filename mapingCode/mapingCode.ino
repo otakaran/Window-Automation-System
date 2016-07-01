@@ -30,6 +30,9 @@ void loop()
   delay(100);
   lcd.clear();
   menu(cursorPos);
+  delay(200);
+  lcd.setCursor(3,1);
+  lcd.print("Value: ");
 }
 
 void menu(int cursorPos)
@@ -38,21 +41,21 @@ void menu(int cursorPos)
     case 1:
       lcd.setCursor(0,0);
       lcd.print("Set Time");
-      lcd.setCursor(3,1);
-      lcd.print("Value: ");
+      lcd.setCursor(11,1);
       if (redState == HIGH)
       {
     time = time + 1;
+    lcd.print(time);
       } 
       else if (blueState == HIGH)
       {
         time = time - 1;
+        lcd.print(time);
       }
       else
       {
         lcd.print("ERROR TIME: ");
       }
-      lcd.print(time);
       break;
     case 2:
       lcd.setCursor(0,0);
