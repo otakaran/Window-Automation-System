@@ -1,85 +1,75 @@
 #include <LiquidCrystal.h>
 // See http://arduino.cc/en/Reference/LiquidCrystal
+#include <time.h>
 
 LiquidCrystal lcd(12,11,5,4,3,2);
 int redButton = 9;
-int blueButton = 8;
-int redState = 0;
-int blueState = 0;
+int optionSelector = 0;
+int variableChanger = 1;
 
-int time = 0;
-int closeTime = 0;
+int redButtonState = 0;
+int selectedOption = 0;
+int input = 0;
 
 void setup()
 {
   lcd.begin(16, 2);
   lcd.clear();
-  pinMode(redState, INPUT);
-  pinMode(blueState, INPUT);
+  pinMode(redButtonState, INPUT);
+  Serial.begin(9600);
 }
 
 void loop()
 {
-  redState = digitalRead(redButton);
-  blueState = digitalRead(blueButton);
+  // Set button inputs every loop
+  redButtonState = digitalRead(redButton);
+  selectedOption = analogRead(optionSelector);
+  input = analogRead(variableChanger);
+
+  selectedOption = map(selectedOption, 10, 1023, 1, 7);  // This may seem arbitrary but it works
+  menu(selectedOption, redButtonState, variableChanger);
+
+  lcd.setCursor(0,1);
+  lcd.print("Red: ");
+  lcd.print(redButtonState);
+  lcd.print(" IN: ");
+  lcd.print(input);
   
-  int cursorPos = analogRead(0);
-  int selection = 0;
-  cursorPos = map(cursorPos, 10, 1010, 1,6);
-  lcd.print(cursorPos);
-  delay(100);
+  delay(50);  // Adjust this based on how much the LCD flickers
   lcd.clear();
-  menu(cursorPos);
-  delay(200);
-  lcd.setCursor(3,1);
-  lcd.print("Value: ");
 }
 
-void menu(int cursorPos)
+int menu(int selectedOption, int redButtonState, int variableChanger)
 {
-  switch (cursorPos) {
+  switch (selectedOption)
+  {
     case 1:
       lcd.setCursor(0,0);
-      lcd.print("Set Time");
-      lcd.setCursor(11,1);
-      if (redState == HIGH)
-      {
-    time = time + 1;
-    lcd.print(time);
-      } 
-      else if (blueState == HIGH)
-      {
-        time = time - 1;
-        lcd.print(time);
-      }
-      else
-      {
-        lcd.print("ERROR TIME: ");
-      }
+      lcd.print("SYSTEM TIME");
       break;
     case 2:
       lcd.setCursor(0,0);
-      lcd.print("Set close time");
+      lcd.print("CLOSE TIME");
       break;
     case 3:
       lcd.setCursor(0,0);
-      lcd.print("Close on Rain");
+      lcd.print("OPEN TIME");
       break;
     case 4:
       lcd.setCursor(0,0);
-      lcd.print("Close on ____");
+      lcd.print("SMART RAIN");
       break;
     case 5:
       lcd.setCursor(0,0);
-      lcd.print("Code on ______");
+      lcd.print("SMART TEMP");
       break;
     case 6:
       lcd.setCursor(0,0);
-      lcd.print("Shutdown");
+      lcd.print("WIP");
       break;
-    default: 
-      lcd.setCursor(0,0);
-      lcd.print("ERROR");
+    default:
+      //
     break;
   }
 }
+
