@@ -1,78 +1,130 @@
 #include <LiquidCrystal.h>
 // See http://arduino.cc/en/Reference/LiquidCrystal
 
+//Declare pin functions on Redboard
+#define stp 7
+#define dir 6
+#define MS1 8
+#define EN  1
+
 LiquidCrystal lcd(12,11,5,4,3,2);
-int redButton = 9;
+int strip = 2;
 int optionSelector = 0;
 int variableChanger = 1;
-
-int redButtonState = 0;
+int stripState = 0;
 int selectedOption = 0;
 int input = 0;
 
-int dirpin = 6;
-int steppin = 7;
+//Declare variables for functions
+char user_input;
+int x;
+int y;
+int state;
 
 void setup()
 {
   lcd.begin(16, 2);
   lcd.clear();
-  pinMode(redButtonState, INPUT);
+  pinMode(stripState, INPUT);
   Serial.begin(9600);
 
-  pinMode(dirpin, OUTPUT);
-  pinMode(steppin, OUTPUT);
+  pinMode(dir, OUTPUT);
+  pinMode(stp, OUTPUT);
+  pinMode(EN, OUTPUT);
+  resetEDPins(); //Set step, direction, microstep and enable pins to default states
 }
 
-void spin()
+//Reset Easy Driver pins to default states
+void resetEDPins()
 {
-  int i;
-  digitalWrite(dirpin, LOW);     // Set the direction.
-  delay(100);
-  for (i = 0; i<4000; i++)       // Iterate for 4000 microsteps.
+  digitalWrite(stp, LOW);
+  digitalWrite(dir, LOW);
+  digitalWrite(EN, HIGH);
+}
+
+//Default microstep mode function
+void StepForwardDefault()
+{
+  digitalWrite(dir, LOW); //Pull direction pin low to move "forward"
+  for(x= 1; x<200; x++)  //Loop the forward stepping enough times for motion to be visible
   {
-    digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
-    digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
-    delayMicroseconds(500);      // This delay time is close to top speed for this
-  }                              // particular motor. Any faster the motor stalls.
-  digitalWrite(dirpin, HIGH);    // Change direction.
-  delay(100);
-  for (i = 0; i<4000; i++)       // Iterate for 4000 microsteps
+    digitalWrite(stp,HIGH); //Trigger one step forward
+    delay(1);
+    digitalWrite(stp,LOW); //Pull step pin low so it can be triggered again
+    delay(1);
+  }
+}
+
+//Reverse default microstep mode function
+void ReverseStepDefault()
+{
+  digitalWrite(dir, HIGH); //Pull direction pin high to move in "reverse"
+  for(x= 1; x<1000; x++)  //Loop the stepping enough times for motion to be visible
   {
-    digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
-    digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
-    delayMicroseconds(500);      // This delay time is close to top speed for this
-  }                              // particular motor. Any faster the motor stalls.
+    digitalWrite(stp,HIGH); //Trigger one step
+    delay(1);
+    digitalWrite(stp,LOW); //Pull step pin low so it can be triggered again
+    delay(1);
+  }
+}
+
+//Forward/reverse stepping function
+void ForwardBackwardStep()
+{
+  for(x= 1; x<5; x++)  //Loop the forward stepping enough times for motion to be visible
+  {
+    //Read direction pin state and change it
+    state=digitalRead(dir);
+    if(state == HIGH)
+    {
+      digitalWrite(dir, LOW);
+    }
+    else if(state ==LOW)
+    {
+      digitalWrite(dir,HIGH);
+    }
+    
+    for(y=1; y<1000; y++)
+    {
+      digitalWrite(stp,HIGH); //Trigger one step
+      delay(1);
+      digitalWrite(stp,LOW); //Pull step pin low so it can be triggered again
+      delay(1);
+    }
+  }
 }
 
 void loop()
 {
   // Set button inputs every loop
-  redButtonState = digitalRead(redButton);
+  stripState = analogRead(strip);
   selectedOption = analogRead(optionSelector);
   input = analogRead(variableChanger);
 
   selectedOption = map(selectedOption, 10, 1023, 1, 7);  // This may seem arbitrary but it works
-  menu(selectedOption, redButtonState, variableChanger);
+  menu(selectedOption, stripState, variableChanger);
 
   lcd.setCursor(0,1);
   lcd.print("Red: ");
-  lcd.print(redButtonState);
+  lcd.print(stripState);
   lcd.print(" IN: ");
   lcd.print(input);
   
-  delay(50);  // Adjust this based on how much the LCD flickers
+  delay(10);  // Adjust this based on how much the LCD flickers
   lcd.clear();
 }
 
-int menu(int selectedOption, int redButtonState, int variableChanger)
+int menu(int selectedOption, int stripState, int variableChanger)
 {
   switch (selectedOption)
   {
     case 1:
       lcd.setCursor(0,0);
       lcd.print("SYSTEM TIME");
-      spin();
+      if (stripState < 240)
+      {
+        StepForwardDefault();
+      }
       break;
     case 2:
       lcd.setCursor(0,0);
@@ -99,4 +151,3 @@ int menu(int selectedOption, int redButtonState, int variableChanger)
     break;
   }
 }
-
