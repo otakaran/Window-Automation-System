@@ -66,7 +66,7 @@ void setup()
 void StepForwardDefault()
 {
   digitalWrite(dir, LOW); //Pull direction pin low to move "forward"
-  for(x = 1; x < 5000; x++)  //Loop the forward stepping enough times for motion to be visible
+  for(x = 1; x < 13000; x++)  //Loop the forward stepping enough times for motion to be visible
   {
     digitalWrite(stp,HIGH); //Trigger one step forward
     delay(1);
@@ -79,7 +79,7 @@ void StepForwardDefault()
 void ReverseStepDefault()
 {
   digitalWrite(dir, HIGH); //Pull direction pin high to move in "reverse"
-  for(x = 1; x < 5000; x++)  //Loop the stepping enough times for motion to be visible
+  for(x = 1; x < 13000; x++)  //Loop the stepping enough times for motion to be visible
   {
     digitalWrite(stp,HIGH); //Trigger one step
     delay(1);
@@ -154,7 +154,7 @@ bool operateWindow(double T, double P, double Pstart, int forceRead, bool openSt
     else if (forceRead > 990 && P + 2 < Pstart) // If window is closed, raindrops, pressure drop
     {
       lcd.print("14");
-      StepForwardDefault();   // OPEN ER' UP
+      StepForwardDefault();   // CLOSE ER' UP
       return true;
     }
     else    // Error 1 condition (Just for debugging)[RMLA?]
@@ -167,7 +167,7 @@ bool operateWindow(double T, double P, double Pstart, int forceRead, bool openSt
     if (forceRead < 990 && P > Pstart)  // If window is open, no raindrop, pressure back up
     {
       lcd.print("21");
-      if (k > 100)    // Once 100 (ticks) occurs with no rain or pressure the window will open
+      if (k > 25)    // Once 100 (ticks) occurs with no rain or pressure the window will open
       {
         ReverseStepDefault();
         k = 0;
